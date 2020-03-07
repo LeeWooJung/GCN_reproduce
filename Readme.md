@@ -7,7 +7,8 @@ Practice for writing GCN code(Pytorch)
   - https://tkipf.github.io/graph-convolutional-networks/
 
 * You can see the code of original GCN code at here:
-  - https://github.com/tkipf/gcn
+  - https://github.com/tkipf/gcn  (tensorflow)
+  - https://github.com/tkipf/pygcn  (pytorch)
 
 Version control
 ======================================================
