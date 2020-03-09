@@ -16,3 +16,6 @@ Version control
 * pytorch : 1.4.0
 * torchvision : 0.5.0
 * numpy : 1.18.1
+* networkx : 2.4
+* Scipy : 1.4.1
+* Scikit-learn : 0.22.1
