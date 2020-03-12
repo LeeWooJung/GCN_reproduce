@@ -60,25 +60,34 @@ def load_data(dname='cora', dtype='citation'):
 
 		features = sp.vstack((allx, tx)).tolil()
 		features[test_index,:] = features[test_index_sorted,:]
-		adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
-
 		features = normalize(features)
+		features = torch.FloatTensor(features.todense())
 
-		adj = adj.astype(np.float32)
+		adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph)).astype(np.float32)
 		adj = adj + sp.eye(adj.shape[0]) # Add self connections
 		adj = normalize(adj)
+		adj = sparse_to_torchTensor(adj)
 
 		train_label = np.load("{}/ind.{}.ally".format(dpath,dname), allow_pickle=True, encoding='latin1')
 		test_label = np.load("{}/ind.{}.ty".format(dpath,dname), allow_pickle=True, encoding='latin1')
 
-		train_label = reverseOneHot(train_label)
-		test_label = reverseOneHot(test_label)
+		#train_label = reverseOneHot(train_label)
+		#test_label = reverseOneHot(test_label)
 
 		label = np.vstack((train_label, test_label))
 		label[test_index,:] = label[test_index_sorted,:]
-
-		adj = sparse_to_torchTensor(adj)
-		features = torch.FloatTensor(features.todense())
 		label = torch.LongTensor(label)
 
-	return adj, features, label
+		nTrain = int(round(allx.shape[0]/10.))
+		nVal = int(round(allx.shape[0]/5.))
+		nTest = len(test_index_sorted)
+
+		idx = list(range(features.shape[0] - nTest))
+		np.random.shuffle(idx)
+
+		train_idx, val_idx = idx[:nTrain], idx[nTrain : nTrain + nVal]
+		train_idx = torch.LongTensor(train_idx)
+		val_idx = torch.LongTensor(val_idx)
+		test_idx = torch.LongTensor(test_index_sorted)
+
+	return adj, features, label, train_idx, val_idx, test_idx
