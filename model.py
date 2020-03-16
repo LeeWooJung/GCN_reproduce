@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import math
 
 class ConvLayer(nn.Module):
 	def __init__(self, inDim, outDim):
@@ -12,7 +13,7 @@ class ConvLayer(nn.Module):
 		self.inDim = inDim
 		self.outDim = outDim
 		self.W = nn.Parameter(torch.randn(inDim,outDim))
-		self.b = nn.Parameter(torch.randn(outDim))
+		self.b = nn.Parameter(torch.zeros(outDim))
 		self.setParam()
 
 	def setParam(self):
@@ -20,8 +21,8 @@ class ConvLayer(nn.Module):
 		In, Out = tuple(self.W.size())
 		absRange = np.sqrt(6.0/(In+Out))
 		self.W.data.uniform_(-absRange,absRange)
-		absRange = np.sqrt(3.0/Out)
-		self.b.data.uniform_(-absRange,absRange)
+		#absRange = np.sqrt(3.0/Out)
+		#self.b.data.uniform_(absRange,absRange)
 
 	def forward(self, x, adj):
 

@@ -15,13 +15,6 @@ def normalize(data):
 
 	return data
 
-def reverseOneHot(label):
-
-	label = np.where(label == 1)[1] + 1
-	label = label.reshape(-1,1)
-
-	return label
-
 def sparse_to_torchTensor(matrix):
 
 	matrix = sp.coo_matrix(matrix)
@@ -35,6 +28,7 @@ def load_data(dname='cora', dtype='citation'):
 	"""
 		Reference: https://github.com/tkipf/gae/blob/master/gae/input_data.py
 	"""
+	print('Loading {} dataset.........'.format(dname))
 	if dtype == 'citation':
 		candidate = ['x','tx','allx','graph']
 		obj = []
@@ -71,21 +65,13 @@ def load_data(dname='cora', dtype='citation'):
 		train_label = np.load("{}/ind.{}.ally".format(dpath,dname), allow_pickle=True, encoding='latin1')
 		test_label = np.load("{}/ind.{}.ty".format(dpath,dname), allow_pickle=True, encoding='latin1')
 
-		#train_label = reverseOneHot(train_label)
-		#test_label = reverseOneHot(test_label)
-
 		label = np.vstack((train_label, test_label))
 		label[test_index,:] = label[test_index_sorted,:]
 		label = torch.LongTensor(label)
 
-		nTrain = int(round(allx.shape[0]/10.))
-		nVal = int(round(allx.shape[0]/5.))
-		nTest = len(test_index_sorted)
+		train_idx = range(x.shape[0])
+		val_idx = range(x.shape[0], x.shape[0]+500)
 
-		idx = list(range(features.shape[0] - nTest))
-		np.random.shuffle(idx)
-
-		train_idx, val_idx = idx[:nTrain], idx[nTrain : nTrain + nVal]
 		train_idx = torch.LongTensor(train_idx)
 		val_idx = torch.LongTensor(val_idx)
 		test_idx = torch.LongTensor(test_index_sorted)

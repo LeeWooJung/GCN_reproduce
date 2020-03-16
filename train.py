@@ -8,9 +8,9 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from preprocessing import load_data, normalize, sparse_to_torchTensor
+from preprocessing import load_data
+from utils import accuracy
 from model import GCN
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dname', type=str, default='cora', help='Name of dataset')
@@ -28,6 +28,7 @@ device = ("cuda" if torch.cuda.is_available() else "cpu")
 # DataSet
 dname = args.dname
 dtype = args.dtype
+
 # Training hyperparameters
 seed = args.seed
 epochs = args.epochs
@@ -45,7 +46,7 @@ if device == "cuda":
 A, X, y, train_idx, val_idx, test_idx = load_data(dname,dtype)
 
 dfeat = X.shape[1]
-nclass = y.shape[1] 
+nclass = y.shape[1]
 
 # define model & optimizer
 model = GCN(dfeat, nhid, nclass, dropout)
@@ -66,13 +67,27 @@ def train(epoch):
 	optimizer.zero_grad()
 	output = model(X,A)
 	train_loss = F.nll_loss(output[train_idx], torch.max(y[train_idx],1)[1])
+	train_accuracy = accuracy(output[train_idx], torch.max(y[train_idx],1)[1])
 	train_loss.backward()
 	optimizer.step()
 
+	model.eval()
+	output = model(X, A)
 	val_loss = F.nll_loss(output[val_idx], torch.max(y[val_idx],1)[1])
+	val_accuracy = accuracy(output[val_idx], torch.max(y[val_idx],1)[1])
 	# accruacy code
-	print('Epoch: {:04d}, train_loss: {:.4f}, validation_loss: {:.4f}'
-			.format(epoch+1,train_loss, val_loss))
+	print('Epoch: {:04d}, train_loss: {:.4f}, train_acc: {:.4f},\
+	validation_loss: {:.4f}, val_acc: {:.4f}'.format(epoch+1,train_loss, train_accuracy, val_loss, val_accuracy))
+
+
+def test():
+	model.eval()
+	output = model(X,A)
+	test_loss = F.nll_loss(output[test_idx], torch.max(y[test_idx],1)[1])
+	test_acc = accuracy(output[test_idx], torch.max(y[test_idx],1)[1])
+	print("\nTest results=> loss: {:.4f}, accuracy: {:.4f}".format(test_loss, test_acc))
 
 for epoch in range(epochs):
 	train(epoch)
+
+test()
