@@ -22,5 +22,5 @@ Version control
 
 Model View
 ======================================================
-![alt text](../media/GCN1.png?raw=true)
-![alt text](../media/GCN2.png?raw=true)
+![alt text](https://github.com/LeeWooJung/GCN_reproduce/blob/media/GCN1.png?raw=true)
+![alt text](https://github.com/LeeWooJung/GCN_reproduce/blob/media/GCN2.png?raw=true)
