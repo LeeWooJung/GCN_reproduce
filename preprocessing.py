@@ -30,14 +30,14 @@ def load_data(dname='cora', dtype='citation'):
 	"""
 	print('Loading {} dataset.........'.format(dname))
 	if dtype == 'citation':
-		candidate = ['x','tx','allx','graph']
+		candidate = ['x','y','tx','ty','allx','ally','graph']
 		obj = []
 		dpath = os.path.join('./data',dname)
 
 		for name in candidate:
 			with open("{}/ind.{}.{}".format(dpath,dname,name),'rb') as f:
 				obj.append(np.load(f, allow_pickle=True,encoding='latin1'))
-		x, tx, allx, graph = tuple(obj)
+		x, y, tx, ty, allx, ally, graph = tuple(obj)
 
 		test_index = []
 		for line in open("{}/ind.{}.test.index".format(dpath,dname)):
@@ -50,7 +50,11 @@ def load_data(dname='cora', dtype='citation'):
 			# fill zero vectors to isolated test nodes
 			full_test_index = range(test_index_sorted[0], test_index_sorted[-1]+1)
 			tx_ = sp.lil_matrix((len(full_test_index), x.shape[1]))
+			tx_[test_index_sorted-min(test_index_sorted),:] = tx
 			tx = tx_
+			ty_ = np.zeros((len(full_test_index), y.shape[1]))
+			ty_[test_index_sorted-min(test_index_sorted),:] = ty
+			ty = ty_
 
 		features = sp.vstack((allx, tx)).tolil()
 		features[test_index,:] = features[test_index_sorted,:]
@@ -62,10 +66,7 @@ def load_data(dname='cora', dtype='citation'):
 		adj = normalize(adj)
 		adj = sparse_to_torchTensor(adj)
 
-		train_label = np.load("{}/ind.{}.ally".format(dpath,dname), allow_pickle=True, encoding='latin1')
-		test_label = np.load("{}/ind.{}.ty".format(dpath,dname), allow_pickle=True, encoding='latin1')
-
-		label = np.vstack((train_label, test_label))
+		label = np.vstack((ally, ty))
 		label[test_index,:] = label[test_index_sorted,:]
 		label = torch.LongTensor(label)
 

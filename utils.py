@@ -10,8 +10,10 @@ def accuracy(output, label):
 
 	return acc
 
-def stop_criterion(window, size):
-	for i in range(1, 1+size):
-		if window[-i] <  window[-i-1]:
+def stop_criterion(accuracy, window):
+
+	for i in range(1, window):
+		if accuracy[i-1] > accuracy[i]:
 			return False
 	return True
+

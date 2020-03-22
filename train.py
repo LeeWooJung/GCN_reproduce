@@ -1,5 +1,5 @@
-import argparse
 import time
+import argparse
 
 import numpy as np
 import scipy.sparse as sp
@@ -64,8 +64,9 @@ train_idx = train_idx.to(device)
 val_idx = val_idx.to(device)
 test_idx = test_idx.to(device)
 
+print("Start training the model.............")
+start = time.time()
 for epoch in range(epochs):
-	train_start = time.time()
 	model.train()
 	optimizer.zero_grad()
 	output = model(X,A)
@@ -73,27 +74,38 @@ for epoch in range(epochs):
 	train_accuracy = accuracy(output[train_idx], torch.max(y[train_idx],1)[1])
 	train_loss.backward()
 	optimizer.step()
-	train_end = time.time()
 
-	val_start = time.time()
 	model.eval()
 	output = model(X,A)
 	val_loss = F.nll_loss(output[val_idx], torch.max(y[val_idx],1)[1])
-	val_window.append(val_loss)
-	if len(val_window) > window_size:
-		if stop_criterion(val_window, window_size):
-			break
 	val_accuracy = accuracy(output[val_idx], torch.max(y[val_idx],1)[1])
-	val_end = time.time()
 
 	print('Epoch: {:04d}'.format(epoch+1),
 	      'train loss: {:.4f}'.format(train_loss),
 	      'train accuracy: {:.4f}%'.format(train_accuracy),
-	      'train time: {:.1f}s'.format(train_end-train_start),
 	      'validation loss: {:.4f}'.format(val_loss),
-	      'validation accuracy: {:.4f}%'.format(val_accuracy),
-	      'validation time: {:.1f}s'.format(val_end-val_start))
+	      'validation accuracy: {:.4f}%'.format(val_accuracy))
 
-# Save the model
-	
-#test()
+	if epoch == epochs-1: continue
+	val_window.append(val_loss)
+	if len(val_window) >= window_size:
+		if stop_criterion(val_window, window_size):
+			print("*"*30, end = " ")
+			print("Validation accuracy doesn't decrease anymore with window size : {:02d}".format(window_size))
+			break
+		del val_window[0]
+end = time.time()
+print("Total time to train model: {:.4f}s".format(end-start))
+print("Optimization step is finished!")
+
+#test
+test_start = time.time()
+model.eval()
+output = model(X,A)
+test_loss = F.nll_loss(output[test_idx], torch.max(y[test_idx],1)[1])
+test_accuracy = accuracy(output[test_idx], torch.max(y[test_idx],1)[1])
+test_end = time.time()
+print("Test result: ",
+      "Total time: {:.4f}s".format(test_end-test_start),
+      "test loss: {:.4f}".format(test_loss),
+      "test accuracy: {:.4f}".format(test_accuracy))
