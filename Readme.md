@@ -19,3 +19,8 @@ Version control
 * networkx : 2.4
 * Scipy : 1.4.1
 * Scikit-learn : 0.22.1
+
+Model View
+======================================================
+![alt text](../media/GCN1.png?raw=true)
+![alt text](../media/GCN2.png?raw=true)
